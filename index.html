@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2027학년도 교과과정개편 교육 신청</title>
+<style>
+ *{box-sizing:border-box}
+ body{font-family:'Malgun Gothic',sans-serif;margin:0;background:#f4f6fa;color:#222}
+ .wrap{max-width:680px;margin:0 auto;padding:16px}
+ .hero{background:linear-gradient(135deg,#1a4b8c,#2d6cc0);color:#fff;padding:28px 20px;border-radius:12px}
+ .hero h1{font-size:22px;margin:0 0 10px}.hero p{margin:3px 0;font-size:14px}
+ .card{background:#fff;border-radius:10px;padding:14px;margin-top:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+ .ses{display:flex;justify-content:space-between;padding:10px 12px;border:1px solid #ccd;border-radius:8px;margin-top:8px;background:#fff}
+ .ses.full{background:#eee;color:#999}.tag{font-weight:bold;color:#1a4b8c}.full .tag{color:#c00}
+ .bigbtn{display:block;width:100%;margin:22px 0 8px;padding:20px;font-size:20px;background:#1a4b8c;color:#fff;border:0;border-radius:12px;cursor:pointer}
+ .bigbtn:disabled{background:#999}
+ button.b{padding:9px 14px;background:#1a4b8c;color:#fff;border:0;border-radius:6px;cursor:pointer;font-size:14px}
+ button.b.gray{background:#777}button.b.red{background:#c0392b}button.b:disabled{background:#999}
+ .link{background:none;border:0;color:#666;text-decoration:underline;cursor:pointer;font-size:13px}
+ label{display:block;margin-top:14px;font-weight:bold}
+ input[type=text],input[type=email],input[type=tel],input[type=password],select{width:100%;padding:10px;margin-top:4px;border:1px solid #bbb;border-radius:6px;font-size:15px}
+ .rad{display:flex;justify-content:space-between;border:1px solid #bbb;border-radius:8px;padding:10px;margin-top:8px;font-weight:normal}
+ .rad.full{background:#eee;color:#999}
+ .box{background:#f3f6fb;padding:10px;border-radius:6px;font-size:13px;font-weight:normal}
+ #msg,#amsg{margin-top:14px;font-weight:bold;line-height:1.6}.ok{color:green}.err{color:#c00}
+ .hide{display:none}
+ table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccc;padding:6px;text-align:left}th{background:#eef2f8}
+ .scroll{overflow-x:auto}.tabs button{margin-right:6px}.tabs button.on{background:#0b2d5c}
+ .tools{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.tools select,.tools input{width:auto;margin:0;padding:7px}
+ .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .pill{display:inline-block;background:#fde8e8;color:#a00;border-radius:12px;padding:2px 9px;margin:2px;font-size:12px}
+ #printArea{display:none}
+ @media print{
+  @page{size:A4 landscape;margin:12mm}
+  body{background:#fff}.wrap{display:none}
+  #printArea{display:block}
+  .pg{page-break-after:always}.pg:last-child{page-break-after:auto}
+  #printArea h2{font-size:18px;margin:0 0 4px}#printArea p{margin:0 0 8px;font-size:12px}
+  #printArea td,#printArea th{font-size:12px;padding:8px}
+ }
+</style></head><body>
+<div class="wrap">
+
+<!-- 1. 메인 화면 -->
+<div id="vMain">
+ <div class="hero"><h1>2027학년도 교과과정개편 교육</h1>
+  <p id="hSum">정보를 불러오는 중입니다...</p></div>
+ <div class="card"><b>회차별 신청 현황</b><div id="cards">불러오는 중...</div></div>
+ <button class="bigbtn" id="goApply" disabled>학과장 신청</button>
+ <p id="mInfo" style="text-align:center;font-size:13px;color:#555"></p>
+ <p style="text-align:center"><button class="link" id="goAdmin">관리자</button></p>
+</div>
+
+<!-- 2. 신청 화면 -->
+<div id="vApply" class="hide">
+ <div class="hero"><h1>학과장 신청서</h1><p>회차당 5명, 선착순 접수</p></div>
+ <form id="f" class="card" novalidate>
+  <label>성명 *<input type="text" name="name" required></label>
+  <label>소속 캠퍼스 *<select name="campus" id="campus"><option value="">선택</option></select></label>
+  <label>소속 학과 *<input type="text" name="dept"></label>
+  <label>직급 *<select name="rank" id="rank"><option value="">선택</option></select></label>
+  <label>이메일 *<input type="email" name="email"></label>
+  <label>연락처 *<input type="tel" name="phone" placeholder="010-0000-0000"></label>
+  <label>희망 회차 *</label><div id="radios"></div>
+  <label class="box"><input type="checkbox" id="agree"> 개인정보 수집·이용에 동의합니다. *<br>
+   (수집 항목: 성명, 소속, 이메일, 연락처 / 목적: 교육 신청 접수 및 안내 / 보유 기간: 교육 종료 후 파기)</label>
+  <button class="bigbtn" style="font-size:17px;padding:14px" id="btn" type="submit">신청하기</button>
+  <div id="msg"></div>
+ </form>
+ <p><button class="b gray" id="toMain1">메인으로</button></p>
+</div>
+
+<!-- 3. 관리자 -->
+<div id="vLogin" class="hide">
+ <div class="hero"><h1>관리자 로그인</h1></div>
+ <div class="card">
+  <label>관리자 비밀번호<input type="password" id="pw" autocomplete="off"></label>
+  <p><button class="b" id="doLogin">로그인</button> <button class="b gray" id="toMain2">메인으로</button></p>
+  <div id="lmsg" class="err"></div>
+ </div>
+</div>
+
+<div id="vAdmin" class="hide">
+ <div class="hero"><h1>관리자 화면</h1><p>신청 정보 확인 · 명단 출력 (개인정보 포함, 외부 공유 금지)</p></div>
+ <div class="card">
+  <div class="tabs"><button class="b on" id="tabS">현황</button><button class="b" id="tabL">신청자 명단</button>
+   <button class="b gray" id="refresh">새로고침</button><button class="b gray" id="logout">로그아웃</button></div>
+  <div id="amsg"></div>
+  <div id="pS"></div>
+  <div id="pL" class="hide">
+   <div class="tools">
+    <select id="fSes"></select><select id="fCam"></select><input type="text" id="fQ" placeholder="이름 검색">
+    <label style="margin:0;font-weight:normal"><input type="checkbox" id="fCan"> 취소 포함</label>
+    <button class="b" id="doPrint">인쇄</button><button class="b" id="doCsv">CSV 내려받기</button>
+   </div>
+   <div class="scroll"><table id="tbl"></table></div>
+  </div>
+ </div>
+</div>
+</div>
+
+<div id="printArea"></div>
+
+<script>
+// ===== 수정할 부분 =====
+var API_URL = "https://script.google.com/macros/s/AKfycbyGSA9wXxCOCSb2dE3UFejedod_7fJtt2_UzVlv4sopCTPy2h2_U_RW82pDQ75I72t-8A/exec";   // Apps Script 웹앱 /exec 주소
+// =======================
+var $ = function(id){return document.getElementById(id);};
+var pub = null, token = null, adm = null, timer = null;
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function show(id){["vMain","vApply","vLogin","vAdmin"].forEach(function(v){$(v).classList.toggle("hide",v!==id);});window.scrollTo(0,0);}
+function post(body){
+  return fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)}).then(function(r){return r.json();});
+}
+
+// ---------- 공개 정보 ----------
+function loadPublic(){
+  return fetch(API_URL).then(function(r){return r.json();}).then(function(r){
+    if(!r.ok) throw new Error(r.msg);
+    pub=r;
+    var s0=r.sessions[0]||{};
+    $("hSum").innerHTML="■ 일정: "+r.sessions.map(function(s){return esc(s.id+" "+s.date);}).join(" / ")+
+      "<br>■ 시간: "+esc(s0.time||"")+"<br>■ 장소: "+esc(s0.place||"");
+    $("cards").innerHTML=r.sessions.map(function(s){
+      var full=s.left<=0||r.closed;
+      return '<div class="ses'+(full?' full':'')+'"><span>'+esc(s.id+" "+s.date)+'</span><span class="tag">'+(full?'마감':'잔여 '+s.left+'/'+s.cap)+'</span></div>';
+    }).join("");
+    $("mInfo").innerHTML="신청 마감: "+esc(r.deadline)+"<br>문의: "+esc(r.contact);
+    $("goApply").disabled=!!r.closed;
+    $("goApply").textContent=r.closed?"신청이 마감되었습니다":"학과장 신청";
+    // 신청 화면 목록
+    var cs=$("campus");cs.length=1;r.campuses.forEach(function(c){cs.add(new Option(c,c));});
+    var rk=$("rank");rk.length=1;r.ranks.forEach(function(c){rk.add(new Option(c,c));});
+    drawRadios();
+  }).catch(function(e){$("cards").textContent="정보를 불러오지 못했습니다. 새로고침하세요.";});
+}
+function drawRadios(){
+  $("radios").innerHTML=pub.sessions.map(function(s){
+    var full=s.left<=0||pub.closed;
+    return '<label class="rad'+(full?' full':'')+'"><span><input type="radio" name="session" value="'+esc(s.id)+'"'+(full?' disabled':'')+'> '+esc(s.id+" "+s.date)+'</span><b>'+(full?'마감':'잔여 '+s.left+'/'+s.cap)+'</b></label>';
+  }).join("");
+}
+
+$("goApply").onclick=function(){$("msg").textContent="";loadPublic().then(function(){show("vApply");});};
+$("toMain1").onclick=function(){loadPublic();show("vMain");};
+$("toMain2").onclick=function(){show("vMain");};
+$("goAdmin").onclick=function(){$("pw").value="";$("lmsg").textContent="";show("vLogin");};
+
+// ---------- 신청 ----------
+$("f").addEventListener("submit",function(ev){
+  ev.preventDefault();
+  var msg=$("msg"),btn=$("btn");
+  function bad(t){msg.className="err";msg.textContent=t;}
+  var fd=new FormData(ev.target);
+  var d={action:"apply",name:(fd.get("name")||"").trim(),campus:fd.get("campus"),dept:(fd.get("dept")||"").trim(),
+    rank:fd.get("rank"),email:(fd.get("email")||"").trim().toLowerCase(),phone:(fd.get("phone")||"").trim(),
+    session:fd.get("session")};
+  if(!d.name||!d.campus||!d.dept||!d.rank||!d.email||!d.phone) return bad("필수 항목(*)을 모두 입력하세요.");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return bad("이메일 형식이 올바르지 않습니다.");
+  if(!/^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(d.phone)) return bad("연락처 형식이 올바르지 않습니다. 예: 010-0000-0000");
+  if(!d.session) return bad("희망 회차를 선택하세요.");
+  if(!$("agree").checked) return bad("개인정보 수집·이용에 동의해 주세요.");
+  btn.disabled=true;msg.className="";msg.textContent="제출 중입니다...";
+  post(d).then(function(r){
+    if(r.ok){
+      msg.className="ok";
+      msg.innerHTML="신청이 접수되었습니다.<br>접수번호: "+esc(r.no)+"<br>회차: "+esc(r.session+" "+r.date)+"<br>시간: "+esc(r.time)+"<br>장소: "+esc(r.place)+"<br>확인 메일을 발송했습니다. (스팸함도 확인하세요)";
+      ev.target.reset();
+    } else {
+      var hint={FULL:"정원이 찬 회차입니다. 다른 회차를 선택해 주세요.",DUP:"중복 신청입니다.",CLOSED:"신청이 마감되었습니다."}[r.code]||"";
+      bad((r.msg||"오류가 발생했습니다.")+(hint&&r.msg.indexOf(hint)<0?" "+hint:""));
+    }
+    btn.disabled=false;
+    loadPublic();
+  }).catch(function(){bad("전송 실패. 잠시 후 다시 시도하세요.");btn.disabled=false;});
+});
+
+// ---------- 관리자 로그인 ----------
+$("doLogin").onclick=function(){
+  var b=$("doLogin");b.disabled=true;$("lmsg").textContent="확인 중...";
+  post({action:"adminLogin",password:$("pw").value}).then(function(r){
+    b.disabled=false;
+    if(r.ok){token=r.token;$("pw").value="";$("lmsg").textContent="";startTimer(r.ttl);loadAdmin(true);}
+    else $("lmsg").textContent=r.msg||"로그인 실패";
+  }).catch(function(){b.disabled=false;$("lmsg").textContent="전송 실패. 다시 시도하세요.";});
+};
+$("pw").addEventListener("keydown",function(e){if(e.key==="Enter")$("doLogin").click();});
+function startTimer(sec){clearTimeout(timer);timer=setTimeout(function(){logout("로그인 시간이 만료되었습니다.");},sec*1000);}
+function logout(m){token=null;adm=null;clearTimeout(timer);$("lmsg").textContent=m||"";show("vLogin");}
+$("logout").onclick=function(){logout("");};
+$("refresh").onclick=function(){loadAdmin(false);};
+
+function loadAdmin(first){
+  $("amsg").textContent="불러오는 중...";
+  post({action:"adminList",token:token}).then(function(r){
+    if(r.code==="AUTH"){return logout(r.msg);}
+    if(!r.ok){$("amsg").className="err";$("amsg").textContent=r.msg;return;}
+    adm=r;$("amsg").textContent="";
+    buildFilters();renderStatus();renderList();
+    if(first)show("vAdmin");
+  }).catch(function(){$("amsg").className="err";$("amsg").textContent="불러오기 실패";});
+}
+function tab(which){
+  $("pS").classList.toggle("hide",which!=="S");$("pL").classList.toggle("hide",which!=="L");
+  $("tabS").classList.toggle("on",which==="S");$("tabL").classList.toggle("on",which==="L");
+}
+$("tabS").onclick=function(){tab("S");};$("tabL").onclick=function(){tab("L");};
+
+function active(){return adm.rows.filter(function(r){return r.status==="접수";});}
+function grp(c){return c.split(" ")[0];}
+
+// ---------- 현황 탭 ----------
+function renderStatus(){
+  var act=active(),byCam={},byGrp={};
+  adm.campuses.forEach(function(c){byCam[c]=0;});
+  act.forEach(function(r){byCam[r.campus]=(byCam[r.campus]||0)+1;});
+  adm.campuses.forEach(function(c){var g=grp(c);byGrp[g]=byGrp[g]||{n:0,t:0,none:0};byGrp[g].t++;if(byCam[c]>0){byGrp[g].n+=byCam[c];}else byGrp[g].none++;});
+  var h='<h3>회차별 현황</h3><div class="scroll"><table><tr><th>회차</th><th>일정</th><th>정원</th><th>신청</th><th>잔여</th></tr>'+
+   adm.sessions.map(function(s){return '<tr><td>'+esc(s.id)+'</td><td>'+esc(s.date)+'</td><td>'+s.cap+'</td><td>'+s.used+'</td><td>'+s.left+'</td></tr>';}).join("")+'</table></div>';
+  h+='<h3>대학 구분별 소계</h3><div class="scroll"><table><tr><th>구분</th><th>캠퍼스 수</th><th>신청 건수</th><th>미신청 캠퍼스</th></tr>'+
+   Object.keys(byGrp).map(function(g){var x=byGrp[g];return '<tr><td>'+esc(g)+'</td><td>'+x.t+'</td><td>'+x.n+'</td><td>'+x.none+'</td></tr>';}).join("")+'</table></div>';
+  h+='<h3>캠퍼스별 신청 건수</h3><div class="scroll"><table><tr><th>캠퍼스</th><th>건수</th></tr>'+
+   adm.campuses.map(function(c){return '<tr><td>'+esc(c)+'</td><td>'+byCam[c]+'</td></tr>';}).join("")+'</table></div>';
+  var none=adm.campuses.filter(function(c){return !byCam[c];});
+  h+='<h3>미신청 캠퍼스 ('+none.length+'곳)</h3><div>'+(none.map(function(c){return '<span class="pill">'+esc(c)+'</span>';}).join("")||'모든 캠퍼스가 신청했습니다.')+'</div>';
+  $("pS").innerHTML=h;
+}
+
+// ---------- 명단 탭 ----------
+function buildFilters(){
+  var s=$("fSes"),c=$("fCam"),sv=s.value,cv=c.value;
+  s.innerHTML='<option value="">전체 회차</option>'+adm.sessions.map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.id+" "+x.date)+'</option>';}).join("");
+  c.innerHTML='<option value="">전체 캠퍼스</option>'+adm.campuses.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join("");
+  s.value=sv;c.value=cv;
+}
+["fSes","fCam","fCan"].forEach(function(i){$(i).onchange=function(){renderList();};});
+$("fQ").oninput=function(){renderList();};
+
+function filtered(){
+  var s=$("fSes").value,c=$("fCam").value,q=$("fQ").value.trim(),can=$("fCan").checked;
+  return adm.rows.filter(function(r){
+    return (can||r.status==="접수")&&(!s||r.session===s)&&(!c||r.campus===c)&&(!q||r.name.indexOf(q)>=0);
+  });
+}
+function renderList(){
+  var rows=filtered();
+  var opts=adm.sessions.map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.id)+'</option>';}).join("");
+  $("tbl").innerHTML='<tr><th>접수번호</th><th>접수시각</th><th>성명</th><th>캠퍼스</th><th>학과</th><th>직급</th><th>이메일</th><th>연락처</th><th>회차</th><th>상태</th><th>관리</th></tr>'+
+  (rows.map(function(r){
+    var act=r.status==="접수";
+    return '<tr'+(act?'':' style="color:#999"')+'><td>'+esc(r.no)+'</td><td>'+esc(r.time)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.campus)+'</td><td>'+esc(r.dept)+'</td><td>'+esc(r.rank)+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.phone)+'</td><td>'+esc(r.session)+'</td><td>'+esc(r.status)+'</td><td>'+
+     (act?'<select data-ch="'+esc(r.no)+'"><option value="">회차변경</option>'+opts+'</select> <button class="b red" data-cn="'+esc(r.no)+'">취소</button>':'')+'</td></tr>';
+  }).join("")||'<tr><td colspan="11">해당하는 신청이 없습니다.</td></tr>');
+}
+$("tbl").addEventListener("click",function(e){
+  var no=e.target.getAttribute("data-cn");if(!no)return;
+  if(!confirm("접수번호 "+no+" 신청을 취소할까요? 정원에서 제외됩니다."))return;
+  post({action:"adminCancel",token:token,no:no}).then(function(r){
+    if(r.code==="AUTH")return logout(r.msg);
+    alert(r.ok?"취소되었습니다.":r.msg);loadAdmin(false);
+  });
+});
+$("tbl").addEventListener("change",function(e){
+  var no=e.target.getAttribute("data-ch");if(!no||!e.target.value)return;
+  var ses=e.target.value;
+  if(!confirm("접수번호 "+no+"를 "+ses+"로 변경할까요?")){e.target.value="";return;}
+  post({action:"adminChange",token:token,no:no,session:ses}).then(function(r){
+    if(r.code==="AUTH")return logout(r.msg);
+    alert(r.ok?"변경되었습니다.":r.msg);loadAdmin(false);
+  });
+});
+
+// ---------- 출력 ----------
+$("doPrint").onclick=function(){
+  var sel=$("fSes").value;
+  var list=adm.sessions.filter(function(s){return !sel||s.id===sel;});
+  var act=active();
+  $("printArea").innerHTML=list.map(function(s){
+    var rows=act.filter(function(r){return r.session===s.id;});
+    return '<div class="pg"><h2>2027학년도 교과과정개편 교육 참석자 명단 - '+esc(s.id+" "+s.date)+'</h2><p>'+esc(s.time)+' / '+esc(s.place)+' / 참석 '+rows.length+'명</p>'+
+     '<table><tr><th>번호</th><th>접수번호</th><th>성명</th><th>캠퍼스</th><th>학과</th><th>직급</th><th>연락처</th><th style="width:130px">서명</th></tr>'+
+     (rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.no)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.campus)+'</td><td>'+esc(r.dept)+'</td><td>'+esc(r.rank)+'</td><td>'+esc(r.phone)+'</td><td></td></tr>';}).join("")||'<tr><td colspan="8">신청자 없음</td></tr>')+
+     '</table></div>';
+  }).join("");
+  window.print();
+};
+$("doCsv").onclick=function(){
+  var rows=filtered();
+  var head=["접수번호","접수시각","성명","캠퍼스","학과","직급","이메일","연락처","회차","상태"];
+  function q(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"';}
+  var lines=[head.map(q).join(",")].concat(rows.map(function(r){
+    return [r.no,r.time,r.name,r.campus,r.dept,r.rank,r.email,r.phone,r.session,r.status].map(q).join(",");}));
+  var blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="교육신청자명단.csv";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+};
+
+loadPublic();
+</script></body></html>
